@@ -33,7 +33,7 @@ janela.geometry("300x200")
 janela.eval('tk::PlaceWindow . center') # Centraliza a janela
 
 # Título
-label_titulo = tk.Label(janela, text="Controle do Pisca-Pisca", font=("Arial", 14, "bold"))
+label_titulo = tk.Label(janela, text="Controle PWM", font=("Arial", 14, "bold"))
 label_titulo.pack(pady=15)
 
 # Botão Ligar - Adicionado command=ligar

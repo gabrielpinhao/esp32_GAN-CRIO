@@ -1,43 +1,38 @@
-#include <Arduino.h> // Obrigatório no PlatformIO
+#include <Arduino.h>
 
-#define LED 23
+#define PINO_PWM 23
 
-bool piscando = false;        // Guarda o estado atual (se deve piscar ou não)
-bool estadoLed = LOW;         // Guarda se o LED está aceso ou apagado agora
-unsigned long tempoAnterior = 0; // Guarda a última vez que o LED mudou
-const long intervalo = 2000;  // Tempo de pisca-pisca (2 segundos)
+// Configurações do PWM (API Clássica)
+const int canalPWM = 0;       // O ESP32 possui 16 canais independentes (0 a 15)
+const int frequencia = 50;    // Frequência de 50 Hz
+const int resolucao = 16;     // Resolução de 16 bits (0 a 65535)
+const int dutyCycle50 = 58982; // Valor para 50% de Duty Cycle
 
 void setup() {
   Serial.begin(115200);       // Inicia a comunicação com o computador
-  pinMode(LED, OUTPUT);
-  digitalWrite(LED, LOW);     // Começa com o LED apagado
+
+  // 1. Configura as propriedades do canal PWM
+  ledcSetup(canalPWM, frequencia, resolucao);
+
+  // 2. Conecta o canal PWM ao pino físico
+  ledcAttachPin(PINO_PWM, canalPWM);
+
+  // 3. Garante que inicie com o PWM desligado (escrevendo no CANAL, e não no pino)
+  ledcWrite(canalPWM, 0);     
 }
 
 void loop() {
-  // 1. Verifica se chegou alguma mensagem do Python
+  // Verifica se chegou alguma mensagem do Python
   if (Serial.available() > 0) {
     char comando = Serial.read(); // Lê o que o Python enviou
     
     if (comando == '1') {
-      piscando = true;            // O Python mandou ligar
+      // O Python mandou ligar: Aciona a onda quadrada a 50% no canal
+      ledcWrite(canalPWM, dutyCycle50); 
     } 
     else if (comando == '0') {
-      piscando = false;           // O Python mandou desligar
-      digitalWrite(LED, LOW);     // Garante que o LED não fique travado aceso
-    }
-  }
-
-  // 2. Faz o LED piscar apenas se a variável "piscando" for verdadeira
-  if (piscando) {
-    unsigned long tempoAtual = millis(); // Vê que horas são agora
-    
-    // Se já passou o tempo do intervalo (2 segundos)
-    if (tempoAtual - tempoAnterior >= intervalo) {
-      tempoAnterior = tempoAtual; // Salva a hora atual para a próxima vez
-      
-      // Inverte o estado do LED (se está LOW vira HIGH, e vice-versa)
-      estadoLed = !estadoLed;
-      digitalWrite(LED, estadoLed);
+      // O Python mandou desligar: Zera o duty cycle do canal
+      ledcWrite(canalPWM, 0); 
     }
   }
 }
