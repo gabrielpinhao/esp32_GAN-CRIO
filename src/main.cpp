@@ -1,38 +1,35 @@
 #include <Arduino.h>
 
-#define PINO_PWM 23
-
-// Configurações do PWM (API Clássica)
-const int canalPWM = 0;       // O ESP32 possui 16 canais independentes (0 a 15)
-const int frequencia = 50;    // Frequência de 50 Hz
-const int resolucao = 16;     // Resolução de 16 bits (0 a 65535)
-const int dutyCycle50 = 58982; // Valor para 50% de Duty Cycle
+#define PINO_SAIDA 23 
 
 void setup() {
-  Serial.begin(115200);       // Inicia a comunicação com o computador
+  Serial.begin(115200);         // Inicia a comunicação serial
+  pinMode(PINO_SAIDA, OUTPUT);  // Configura o pino como saída
 
-  // 1. Configura as propriedades do canal PWM
-  ledcSetup(canalPWM, frequencia, resolucao);
-
-  // 2. Conecta o canal PWM ao pino físico
-  ledcAttachPin(PINO_PWM, canalPWM);
-
-  // 3. Garante que inicie com o PWM desligado (escrevendo no CANAL, e não no pino)
-  ledcWrite(canalPWM, 0);     
+  // Inicializa o pino em HIGH (3.3V) por padrão
+  digitalWrite(PINO_SAIDA, HIGH); 
 }
 
 void loop() {
-  // Verifica se chegou alguma mensagem do Python
+  // Verifica se chegou algo do notebook
   if (Serial.available() > 0) {
-    char comando = Serial.read(); // Lê o que o Python enviou
-    
+    char comando = Serial.read(); // Lê o caractere enviado pelo Python
+
+    // Comando '1': Executa o pulso rápido de 80 microssegundos
     if (comando == '1') {
-      // O Python mandou ligar: Aciona a onda quadrada a 50% no canal
-      ledcWrite(canalPWM, dutyCycle50); 
+      digitalWrite(PINO_SAIDA, LOW);   // Desliga (0V)
+      delayMicroseconds(80);           // Aguarda 80us
+      digitalWrite(PINO_SAIDA, HIGH);  // Liga de novo (3.3V)
     } 
+    
+    // Comando '0': Desliga a saída e mantém em 0V
     else if (comando == '0') {
-      // O Python mandou desligar: Zera o duty cycle do canal
-      ledcWrite(canalPWM, 0); 
+      digitalWrite(PINO_SAIDA, LOW); 
+    } 
+    
+    // Comando '2': Liga a saída e mantém em 3.3V (Estado Alto)
+    else if (comando == '2') {
+      digitalWrite(PINO_SAIDA, HIGH); 
     }
   }
 }
