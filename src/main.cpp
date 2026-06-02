@@ -27,8 +27,12 @@ void loop() {
       // Comando '1': Executa o pulso usando a variável tempoDelay
       if (acao == '1') {
         digitalWrite(PINO_SAIDA, LOW);   
-        delayMicroseconds(tempoDelay);   // Usa a variável em vez do número fixo
-        digitalWrite(PINO_SAIDA, HIGH);  
+        delayMicroseconds(80);   // Usa a variável em vez do número fixo
+        digitalWrite(PINO_SAIDA, HIGH);
+        delayMicroseconds(tempoDelay);
+        digitalWrite(PINO_SAIDA, LOW);   
+        delayMicroseconds(80);   // Usa a variável em vez do número fixo
+        digitalWrite(PINO_SAIDA, HIGH);   
       } 
       
       // Comando '0': Desliga a saída
